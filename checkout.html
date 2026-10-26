@@ -42,7 +42,7 @@
           <button class="rm" data-kind="${l.kind}" data-key="${l.key ?? l.index}">Прибрати</button></div>
         <div>${money(l.sum)}</div></div>`).join("")}
       <div class="total"><span>Разом</span><b>${money(Cart.total())}</b></div>
-      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Доставка — за тарифами Нової пошти.</p>
+      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Доставка — за тарифами пошти.</p>
     </div>`;
   }
 
@@ -60,7 +60,7 @@
         ${field("phone", "Телефон", 'type="tel" autocomplete="tel" placeholder="+380" required')}
         ${field("tg", "Telegram <small>(необов'язково)</small>", 'placeholder="@нік"')}
         ${field("city", "Місто", 'autocomplete="address-level2" required')}
-        ${field("np", "Відділення або поштомат Нової пошти", 'placeholder="№" required')}
+        ${field("np", "Пошта і відділення", 'placeholder="Напр.: Нова пошта №12 або Укрпошта, індекс 49000" required')}
         <div class="field"><label>Оплата</label>
           <div class="radio">
             <label><input type="radio" name="pay" value="Переказ на карту" checked>На карту</label>
