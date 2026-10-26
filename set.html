@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Зібрати набір · Літо в банці</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="has-bar">
+
+<header class="top" id="top" data-home="index.html"></header>
+
+<main>
+  <section>
+    <div class="wrap">
+      <h2 id="title"></h2>
+      <p class="sub" id="hint"></p>
+      <div class="pick-grid" id="picks"></div>
+    </div>
+  </section>
+</main>
+
+<div class="bar" id="bar">
+  <div class="wrap">
+    <div class="info" id="progress"></div>
+    <button class="btn" id="orderBtn" disabled>Замовити</button>
+  </div>
+</div>
+
+<script src="products.js"></script>
+<script src="common.js"></script>
+<script>
+  const setIndex = Math.min(SHOP.sets.length - 1, Math.max(0, +new URLSearchParams(location.search).get("set") || 0));
+  const set = SHOP.sets[setIndex];
+  const picked = [];
+
+  document.getElementById("title").textContent = `${set.title} — ${money(set.price)}`;
+  document.getElementById("hint").textContent = `Натисніть на ${set.count} смаків, які хочете в набір`;
+
+  function render() {
+    const full = picked.length >= set.count;
+    document.getElementById("picks").innerHTML = PRODUCTS.map(p => {
+      const on = picked.includes(p.id);
+      return `<button class="pick ${on ? "on" : ""}" data-id="${p.id}" aria-pressed="${on}" ${full && !on ? "disabled" : ""}>
+        <img class="label-img" src="${p.img}" alt="" loading="lazy"><span>${p.name}</span></button>`;
+    }).join("");
+    document.getElementById("progress").innerHTML = full
+      ? `<b>Готово! ${set.count} з ${set.count}</b>`
+      : `Обрано: <b>${picked.length} з ${set.count}</b>`;
+    document.getElementById("orderBtn").disabled = !full;
+  }
+
+  document.getElementById("picks").addEventListener("click", e => {
+    const b = e.target.closest(".pick");
+    if (!b || b.disabled) return;
+    const i = picked.indexOf(b.dataset.id);
+    if (i >= 0) picked.splice(i, 1);
+    else if (picked.length < set.count) picked.push(b.dataset.id);
+    render();
+  });
+
+  document.getElementById("orderBtn").addEventListener("click", () => {
+    Cart.addSet(setIndex, [...picked]);
+    location.href = "checkout.html";
+  });
+
+  render();
+</script>
+</body>
+</html>

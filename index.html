@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Літо в банці</title>
+<meta name="description" content="Домашні джеми та соуси ручної роботи від Віти (@cook_and_gossip). Доставка Новою поштою по Україні.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top" id="top"></header>
+
+<main>
+  <div class="wrap">
+    <section class="hero">
+      <h1 style="margin:0"><img class="hero-logo" src="img/logo.png" alt="Літо в банці"></h1>
+      <p class="lead">Домашні джеми та соуси ручної роботи від авторки блогу «Готую та пліткую».</p>
+      <ul class="badges">
+        <li>🍓 Натуральний склад</li>
+        <li>❤️ Ручна робота</li>
+        <li>📦 Нова пошта по Україні</li>
+      </ul>
+      <div class="hero-jars">
+        <img class="label-img" src="img/cherry.jpg" alt="Вишневий джем">
+        <img class="label-img" src="img/strawberry.jpg" alt="Полуничний джем">
+        <img class="label-img" src="img/peach-lemon-vanilla.jpg" alt="Джем персик-лимон-ваніль">
+      </div>
+      <a class="btn" href="#menu">Обрати смак</a>
+    </section>
+  </div>
+
+  <section id="menu">
+    <div class="wrap">
+      <h2>Смаки</h2>
+      <p class="sub">Кожен смак є в двох розмірах</p>
+      <div class="prices" id="prices"></div>
+      <div class="filters" id="filters">
+        <button class="on" data-cat="all">Усі</button>
+        <button data-cat="jam">Джеми</button>
+        <button data-cat="sauce">Соуси</button>
+        <button data-cat="sweet">Солодке</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section id="sets">
+    <div class="wrap">
+      <h2>Набори</h2>
+      <p class="sub">Оберіть 6 смаків, які подобаються. Гарний подарунок.</p>
+      <div class="sets" id="setsList"></div>
+    </div>
+  </section>
+
+  <section id="order">
+    <div class="wrap">
+      <h2>Як замовити</h2>
+      <p class="sub">Просто і швидко</p>
+      <ol class="steps">
+        <li><b>Оберіть смаки</b>Додайте баночки або набір у кошик.</li>
+        <li><b>Залиште контакти</b>Ми напишемо вам, щоб підтвердити замовлення.</li>
+        <li><b>Оплата і доставка</b>На карту або накладеним платежем. Новою поштою по всій Україні.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="contacts">
+    <div class="wrap">
+      <h2>Ми в соцмережах</h2>
+      <p class="sub">Питання — пишіть в особисті</p>
+      <div class="contacts" id="contactsList"></div>
+    </div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+
+<div class="bar" id="bar" hidden>
+  <div class="wrap">
+    <div class="info" id="barInfo"></div>
+    <a class="btn" href="checkout.html">Оформити</a>
+  </div>
+</div>
+
+<script src="products.js"></script>
+<script src="common.js"></script>
+<script>
+  document.getElementById("prices").innerHTML = SHOP.prices
+    .map(p => `<span class="price-tag">${p.size} — <b>${money(p.price)}</b></span>`).join("");
+
+  // Selected size per product (index in SHOP.prices), default 100 ml.
+  const chosen = {};
+  let filter = "all";
+  const grid = document.getElementById("grid");
+
+  function buyBlock(p) {
+    const size = chosen[p.id] || 0, q = Cart.qty(p.id, size);
+    return q
+      ? `<div class="counter">
+           <button data-act="minus" aria-label="Менше">−</button>
+           <span>${ICONS.cart}${q}</span>
+           <button data-act="plus" aria-label="Більше">+</button>
+         </div>`
+      : `<button class="btn" data-act="plus">${ICONS.cart}Замовити</button>`;
+  }
+
+  function render() {
+    grid.innerHTML = PRODUCTS.filter(p => filter === "all" || p.cat === filter).map(p => `
+      <article class="card" data-id="${p.id}">
+        <img class="label-img" src="${p.img}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <p>${p.text}</p>
+        <div class="sizes">${SHOP.prices.map((pr, i) =>
+          `<button data-size="${i}" class="${(chosen[p.id] || 0) === i ? "on" : ""}">${pr.size}<br>${money(pr.price)}</button>`).join("")}
+        </div>
+        <div class="buy">${buyBlock(p)}</div>
+      </article>`).join("");
+  }
+
+  grid.addEventListener("click", e => {
+    const card = e.target.closest(".card"), b = e.target.closest("button");
+    if (!card || !b) return;
+    const id = card.dataset.id;
+    if (b.dataset.size) { chosen[id] = +b.dataset.size; render(); return; }
+    if (b.dataset.act) Cart.add(id, chosen[id] || 0, b.dataset.act === "plus" ? 1 : -1);
+  });
+
+  document.getElementById("filters").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    document.querySelectorAll("#filters button").forEach(x => x.classList.toggle("on", x === b));
+    filter = b.dataset.cat;
+    render();
+  });
+
+  function renderBar() {
+    const n = Cart.count(), bar = document.getElementById("bar");
+    bar.hidden = !n;
+    document.body.classList.toggle("has-bar", !!n);
+    document.getElementById("barInfo").innerHTML = `У кошику: ${n} шт.<br><b>${money(Cart.total())}</b>`;
+  }
+
+  document.addEventListener("cart", () => { render(); renderBar(); });
+  render();
+  renderBar();
+
+  document.getElementById("setsList").innerHTML = SHOP.sets.map((s, i) => `
+    <div class="set">
+      <h3>${s.title}</h3>
+      <div class="price">${money(s.price)}${s.old ? `<span class="old">${money(s.old)}</span>` : ""}</div>
+      <p>${s.text} на ваш вибір</p>
+      <a class="btn" href="set.html?set=${i}">Замовити набір</a>
+    </div>`).join("");
+
+  document.getElementById("contactsList").innerHTML = [
+    ["instagram", "Instagram", `https://instagram.com/${SHOP.instagram}`],
+    ["tiktok", "TikTok", `https://www.tiktok.com/@${SHOP.tiktok}`],
+    ["youtube", "YouTube", `https://www.youtube.com/@${SHOP.youtube}`],
+    ["threads", "Threads", `https://www.threads.net/@${SHOP.threads}`],
+  ].map(([k, label, href]) => `<a href="${href}" target="_blank" rel="noopener">${ICONS[k]}${label}</a>`).join("");
+</script>
+</body>
+</html>

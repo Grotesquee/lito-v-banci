@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оформлення замовлення · Літо в банці</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top" id="top" data-home="index.html"></header>
+
+<main>
+  <section>
+    <div class="wrap" style="max-width:640px">
+      <h2>Ваше замовлення</h2>
+      <div id="view"></div>
+    </div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+
+<script src="products.js"></script>
+<script src="common.js"></script>
+<script>
+  const view = document.getElementById("view");
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function cartPanel() {
+    const lines = Cart.lines();
+    if (!lines.length) return `<div class="panel empty">Кошик порожній.<br><br><a class="btn" href="index.html#menu">Обрати смаки</a></div>`;
+    return `<div class="panel"><h3>Кошик</h3>
+      ${lines.map(l => `<div class="line">
+        <div><b>${esc(l.title)}</b><small>${esc(l.detail)}</small>
+          <button class="rm" data-kind="${l.kind}" data-key="${l.key ?? l.index}">Прибрати</button></div>
+        <div>${money(l.sum)}</div></div>`).join("")}
+      <div class="total"><span>Разом</span><b>${money(Cart.total())}</b></div>
+      <p style="margin:8px 0 0;font-size:14px;color:var(--muted)">Доставка — за тарифами Нової пошти.</p>
+    </div>`;
+  }
+
+  const field = (id, label, opts = "") => `
+    <div class="field" id="f-${id}"><label for="${id}">${label}</label>
+      <input id="${id}" name="${id}" ${opts}><div class="err">Заповніть це поле</div></div>`;
+
+  function render() {
+    const has = Cart.lines().length;
+    view.innerHTML = cartPanel() + (has ? `
+      <form class="panel" id="form" novalidate>
+        <h3>Ваші контакти</h3>
+        ${SHOP.orderEndpoint ? "" : `<div class="notice">Тестовий режим: замовлення ще не надсилається. Підключимо Telegram-бота.</div>`}
+        ${field("name", "Ім'я та прізвище", 'autocomplete="name" required')}
+        ${field("phone", "Телефон", 'type="tel" autocomplete="tel" placeholder="+380" required')}
+        ${field("tg", "Telegram <small>(необов'язково)</small>", 'placeholder="@нік"')}
+        ${field("city", "Місто", 'autocomplete="address-level2" required')}
+        ${field("np", "Відділення або поштомат Нової пошти", 'placeholder="№" required')}
+        <div class="field"><label>Оплата</label>
+          <div class="radio">
+            <label><input type="radio" name="pay" value="Переказ на карту" checked>На карту</label>
+            <label><input type="radio" name="pay" value="Накладений платіж">Накладений платіж</label>
+          </div></div>
+        <div class="field"><label for="note">Коментар <small>(необов'язково)</small></label>
+          <textarea id="note" name="note" rows="3"></textarea></div>
+        <div class="send-error" id="sendError" role="alert" hidden>
+          <b>Не вдалося надіслати замовлення 😔</b>
+          Ваш кошик і дані збережені. Спробуйте ще раз за хвилину або напишіть нам в Instagram — ми все оформимо вручну.
+          <a class="btn ghost" href="https://ig.me/m/${SHOP.instagram}" target="_blank" rel="noopener">Написати в Instagram</a>
+        </div>
+        <button class="btn" style="width:100%" type="submit">Підтвердити замовлення</button>
+        <p style="font-size:13px;color:var(--muted);text-align:center;margin:10px 0 0">Ми зв'яжемося з вами, щоб підтвердити замовлення.</p>
+      </form>` : "");
+  }
+
+  view.addEventListener("click", e => {
+    const b = e.target.closest(".rm");
+    if (!b) return;
+    if (b.dataset.kind === "set") Cart.removeSet(+b.dataset.key);
+    else { const [id, size] = b.dataset.key.split("|"); Cart.add(id, size, -Cart.qty(id, size)); }
+  });
+  document.addEventListener("cart", render);
+
+  view.addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, data = Object.fromEntries(new FormData(f));
+    let ok = true;
+    for (const k of ["name", "phone", "city", "np"]) {
+      let bad = !data[k].trim();
+      if (k === "phone") bad = data.phone.replace(/\D/g, "").length < 10;
+      document.getElementById("f-" + k).classList.toggle("bad", bad);
+      if (bad) ok = false;
+    }
+    if (!ok) { f.querySelector(".bad input").focus(); return; }
+
+    const order = {
+      ...data,
+      items: Cart.lines().map(l => `${l.title} (${l.detail}) — ${money(l.sum)}`),
+      total: money(Cart.total()),
+      time: new Date().toLocaleString("uk-UA"),
+    };
+    const btn = f.querySelector("button[type=submit]");
+    const errBox = document.getElementById("sendError");
+    errBox.hidden = true;
+    btn.disabled = true; btn.textContent = "Надсилаємо…";
+    try {
+      if (SHOP.orderEndpoint) {
+        // text/plain avoids a CORS preflight; Apps Script reads the JSON body and answers "ok" or "error".
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 25000);
+        const res = await fetch(SHOP.orderEndpoint, { method: "POST", signal: ctrl.signal,
+          headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(order) });
+        clearTimeout(timer);
+        const answer = (await res.text()).trim();
+        if (!res.ok || answer !== "ok") throw new Error("server: " + answer.slice(0, 80));
+      } else {
+        console.log("TEST ORDER", order);
+      }
+      document.removeEventListener("cart", render);
+      Cart.clear();
+      view.innerHTML = `<div class="panel" style="text-align:center">
+        <h3>Дякуємо, ${esc(data.name.split(" ")[0])}! ❤️</h3>
+        <p>Замовлення прийнято. Ми скоро зв'яжемося з вами за номером ${esc(data.phone)}.</p>
+        <a class="btn" href="index.html">На головну</a></div>`;
+    } catch (err) {
+      console.warn("Order not sent:", err);
+      btn.disabled = false; btn.textContent = "Спробувати ще раз";
+      errBox.hidden = false;
+      errBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
