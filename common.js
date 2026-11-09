@@ -60,7 +60,7 @@ function renderHeader() {
   const n = Cart.count();
   el.innerHTML = `
     <div class="wrap">
-      <a class="logo" href="index.html"><img src="img/logo.png" alt="Літо в банці"></a>
+      <a class="logo" href="./"><img src="img/logo.png" alt="Літо в банці"></a>
       <nav>
         <a class="nav-link" href="${home}#menu">Смаки</a>
         <a class="nav-link" href="${home}#sets">Набори</a>

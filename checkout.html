@@ -14,7 +14,7 @@
 </head>
 <body>
 
-<header class="top" id="top" data-home="index.html"></header>
+<header class="top" id="top" data-home="./"></header>
 
 <main>
   <section>
@@ -35,7 +35,7 @@
 
   function cartPanel() {
     const lines = Cart.lines();
-    if (!lines.length) return `<div class="panel empty">Кошик порожній.<br><br><a class="btn" href="index.html#menu">Обрати смаки</a></div>`;
+    if (!lines.length) return `<div class="panel empty">Кошик порожній.<br><br><a class="btn" href="./#menu">Обрати смаки</a></div>`;
     return `<div class="panel"><h3>Кошик</h3>
       ${lines.map(l => `<div class="line">
         <div><b>${esc(l.title)}</b><small>${esc(l.detail)}</small>
@@ -126,7 +126,7 @@
       view.innerHTML = `<div class="panel" style="text-align:center">
         <h3>Дякуємо, ${esc(data.name.split(" ")[0])}! ❤️</h3>
         <p>Замовлення прийнято. Ми скоро зв'яжемося з вами за номером ${esc(data.phone)}.</p>
-        <a class="btn" href="index.html">На головну</a></div>`;
+        <a class="btn" href="./">На головну</a></div>`;
     } catch (err) {
       console.warn("Order not sent:", err);
       btn.disabled = false; btn.textContent = "Спробувати ще раз";
