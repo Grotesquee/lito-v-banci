@@ -13,12 +13,12 @@ const SHOP = {
   orderEndpoint: "https://script.google.com/macros/s/AKfycbw3ImrBQ6JxI1WmM7dTuBG7_AgJomNBSxn8wR04yGm8VMoluZop2HPJfk67dsU9NGAs/exec",
   prices: [
     { size: "100 мл", price: 99 },
-    { size: "200 мл", price: 199 },
+    { size: "200 мл", price: 189 },
   ],
   // size = index in prices
   sets: [
     { size: 0, count: 6, title: "Набір 6 × 100 мл", text: "6 смаків по 100 мл", price: 549, old: 594 },
-    { size: 1, count: 6, title: "Набір 6 × 200 мл", text: "6 смаків по 200 мл", price: 1149, old: 1194 },
+    { size: 1, count: 6, title: "Набір 6 × 200 мл", text: "6 смаків по 200 мл", price: 1100, old: 1134 },
   ],
 };
 

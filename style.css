@@ -19,7 +19,7 @@ img { max-width: 100%; display: block; }
 a { color: inherit; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
 .script { font-family: "Caveat", cursive; }
-.label-img { border-radius: 50%; clip-path: circle(48.5%); }
+.label-img { border-radius: 14px; aspect-ratio: 1; object-fit: cover; }
 
 /* Top bar */
 .top { position: sticky; top: 0; z-index: 20; background: rgba(248,239,221,.95);
