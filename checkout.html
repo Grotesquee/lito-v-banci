@@ -50,6 +50,124 @@
     <div class="field" id="f-${id}"><label for="${id}">${label}</label>
       <input id="${id}" name="${id}" ${opts}><div class="err">Заповніть це поле</div></div>`;
 
+  // City and branch fields with a dropdown list (filled from the Nova Poshta API).
+  const acField = id => `
+    <div class="field ac-field" id="f-${id}"><label for="${id}"></label>
+      <input id="${id}" name="${id}" autocomplete="off" required>
+      <ul class="ac" hidden></ul><div class="err"></div></div>`;
+
+  // ---- Nova Poshta ----
+  const NP = { mode: "np", down: false, cityRef: null, whPicked: false };
+  async function npCall(method, props) {
+    const res = await fetch("https://api.novaposhta.ua/v2.0/json/", { method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey: SHOP.npApiKey, modelName: "AddressGeneral", calledMethod: method, methodProperties: props }) });
+    const d = await res.json();
+    if (!d.success) throw new Error((d.errors || []).join("; ") || "NP error");
+    return d.data;
+  }
+  const npOn = () => NP.mode === "np" && !NP.down;
+
+  async function findCities(q) {
+    if (q.length < 2) return null;
+    const d = await npCall("searchSettlements", { CityName: q, Limit: "20", Page: "1" });
+    return (d[0]?.Addresses || []).filter(a => a.Warehouses > 0)
+      .map(a => ({ label: a.Present, ref: a.DeliveryCity }));
+  }
+  async function findBranches(q) {
+    if (!NP.cityRef) return null;
+    const d = await npCall("getWarehouses", { CityRef: NP.cityRef, FindByString: q, Limit: "50", Page: "1" });
+    const list = d.map(w => ({ label: w.Description, num: w.Number }));
+    if (/^\d+$/.test(q)) list.sort((a, b) => (b.num === q) - (a.num === q)); // exact number first
+    return list;
+  }
+
+  // Generic dropdown for one input. fetcher(q) -> [{label,...}] or null (hide the list).
+  function autocomplete(input, fetcher, onPick) {
+    const list = input.parentElement.querySelector(".ac");
+    let timer, seq = 0, items = [];
+    const run = () => {
+      if (!npOn()) return;
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const my = ++seq;
+        try {
+          const arr = await fetcher(input.value.trim());
+          if (my !== seq || document.activeElement !== input) return;
+          if (!arr) { list.hidden = true; return; }
+          items = arr;
+          list.innerHTML = arr.length ? arr.map((x, i) => `<li data-i="${i}">${esc(x.label)}</li>`).join("")
+            : `<li class="none">Нічого не знайдено</li>`;
+          list.hidden = false;
+        } catch (err) { npFail(err); }
+      }, 300);
+    };
+    input.addEventListener("input", () => { if (npOn()) onPick(null); run(); });
+    input.addEventListener("focus", run);
+    input.addEventListener("blur", () => setTimeout(() => { list.hidden = true; }, 150));
+    list.addEventListener("pointerdown", e => {
+      const li = e.target.closest("li[data-i]");
+      if (!li) return;
+      e.preventDefault();
+      const x = items[+li.dataset.i];
+      input.value = x.label;
+      list.hidden = true;
+      onPick(x);
+      input.closest(".field").classList.remove("bad");
+    });
+  }
+
+  // Labels and hints for the chosen post service.
+  function setPostMode(mode) {
+    NP.mode = mode;
+    const city = document.getElementById("city"), br = document.getElementById("np");
+    const fc = document.getElementById("f-city"), fb = document.getElementById("f-np");
+    const on = npOn();
+    fc.querySelector("label").textContent = "Місто";
+    fb.querySelector("label").textContent = mode === "np" ? "Відділення або поштомат" : "Пошта і відділення";
+    city.placeholder = on ? "Почніть вводити назву" : "";
+    br.placeholder = on ? (NP.cityRef ? "Номер або адреса" : "Спочатку оберіть місто")
+      : mode === "np" ? "№ відділення або поштомату" : "Служба і № відділення (Укрпошта, Meest…)";
+    br.disabled = on && !NP.cityRef;
+    fc.querySelector(".err").textContent = on ? "Оберіть місто зі списку" : "Заповніть це поле";
+    fb.querySelector(".err").textContent = on ? "Оберіть відділення зі списку" : "Заповніть це поле";
+    fc.classList.remove("bad"); fb.classList.remove("bad");
+  }
+
+  function npFail(err) {
+    console.warn("Nova Poshta API:", err);
+    if (NP.down) return;
+    NP.down = true;
+    document.querySelectorAll(".ac").forEach(l => { l.hidden = true; });
+    const note = document.createElement("div");
+    note.className = "notice";
+    note.textContent = "Не вдалося завантажити список Нової пошти. Впишіть місто і відділення вручну.";
+    document.getElementById("f-city").before(note);
+    setPostMode(NP.mode);
+  }
+
+  function initPost() {
+    const city = document.getElementById("city"), br = document.getElementById("np");
+    if (!city) return;
+    NP.cityRef = null; NP.whPicked = false;
+    autocomplete(city, findCities, x => {
+      if ((x?.ref || null) === NP.cityRef && x) return;
+      NP.cityRef = x?.ref || null;
+      NP.whPicked = false; br.value = "";
+      setPostMode(NP.mode);
+    });
+    autocomplete(br, findBranches, x => { NP.whPicked = !!x; });
+    document.querySelectorAll("input[name=post]").forEach(r => {
+      r.checked = r.value === NP.mode;
+      r.addEventListener("change", () => {
+        NP.cityRef = null; NP.whPicked = false;
+        if (NP.mode === "np" || r.value === "np") { br.value = ""; }
+        setPostMode(r.value);
+      });
+    });
+    setPostMode(NP.mode);
+  }
+
   function render() {
     const has = Cart.lines().length;
     view.innerHTML = cartPanel() + (has ? `
@@ -59,8 +177,13 @@
         ${field("name", "Ім'я та прізвище", 'autocomplete="name" required')}
         ${field("phone", "Телефон", 'type="tel" autocomplete="tel" placeholder="+380" required')}
         ${field("tg", "Telegram <small>(необов'язково)</small>", 'placeholder="@нік"')}
-        ${field("city", "Місто", 'autocomplete="address-level2" required')}
-        ${field("np", "Пошта і відділення", 'placeholder="Служба і № відділення" required')}
+        <div class="field"><label>Доставка</label>
+          <div class="radio">
+            <label><input type="radio" name="post" value="np" checked>Нова пошта</label>
+            <label><input type="radio" name="post" value="other">Інша пошта</label>
+          </div></div>
+        ${acField("city")}
+        ${acField("np")}
         <div class="field"><label>Оплата</label>
           <div class="radio">
             <label><input type="radio" name="pay" value="Переказ на карту" checked>На карту</label>
@@ -76,6 +199,7 @@
         <button class="btn" style="width:100%" type="submit">Підтвердити замовлення</button>
         <p style="font-size:13px;color:var(--muted);text-align:center;margin:10px 0 0">Ми зв'яжемося з вами, щоб підтвердити замовлення.</p>
       </form>` : "");
+    initPost();
   }
 
   view.addEventListener("click", e => {
@@ -91,15 +215,19 @@
     const f = e.target, data = Object.fromEntries(new FormData(f));
     let ok = true;
     for (const k of ["name", "phone", "city", "np"]) {
-      let bad = !data[k].trim();
+      let bad = !(data[k] || "").trim();
       if (k === "phone") bad = data.phone.replace(/\D/g, "").length < 10;
+      if (k === "city" && npOn()) bad = !NP.cityRef;
+      if (k === "np" && npOn()) bad = !NP.whPicked;
       document.getElementById("f-" + k).classList.toggle("bad", bad);
       if (bad) ok = false;
     }
-    if (!ok) { f.querySelector(".bad input").focus(); return; }
+    if (!ok) { f.querySelector(".bad input:not(:disabled)")?.focus(); return; }
 
+    delete data.post;
     const order = {
       ...data,
+      np: (NP.mode === "np" ? "Нова пошта, " : "") + data.np.trim(),
       items: Cart.lines().map(l => `${l.title} (${l.detail}) — ${money(l.sum)}`),
       total: money(Cart.total()),
       time: new Date().toLocaleString("uk-UA"),

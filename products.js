@@ -8,6 +8,8 @@ const SHOP = {
   youtube: "cook_and_gossip",
   threads: "cook_and_gossip",
   // Where orders are sent (Telegram bot via a small Google Apps Script). Empty = test mode.
+  // Nova Poshta API key (Michael's, 2026-11-23). Public by design: used only to search cities and branches.
+  npApiKey: "409503696df2c38fd5ca8e5c436b899c",
   orderEndpoint: "https://script.google.com/macros/s/AKfycbw3ImrBQ6JxI1WmM7dTuBG7_AgJomNBSxn8wR04yGm8VMoluZop2HPJfk67dsU9NGAs/exec",
   prices: [
     { size: "100 мл", price: 99 },
