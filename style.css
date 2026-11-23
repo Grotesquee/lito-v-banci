@@ -180,7 +180,7 @@ footer { text-align: center; padding: 28px 0 40px; color: var(--muted); font-siz
 footer img { width: 200px; margin: 0 auto 6px; }
 .foot-link { color: var(--berry); font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
   display: inline-flex; align-items: center; gap: 6px; vertical-align: middle; }
-footer img.avatar { width: 30px; height: 30px; margin: 0; border-radius: 50%; clip-path: circle(46%); }
+img.avatar { width: 30px; height: 30px; margin: 0; border-radius: 50%; clip-path: circle(46%); }
 .foot-link:hover { color: var(--berry-dark); }
 
 /* City / branch dropdown (Nova Poshta) */
