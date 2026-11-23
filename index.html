@@ -148,8 +148,9 @@
   function render() {
     grid.innerHTML = PRODUCTS.filter(p => filter === "all" || p.cat === filter).map(p => `
       <article class="card" data-id="${p.id}">
+        ${p.slug ? `<a class="to-page" href="/${p.slug}/">` : ""}
         <img class="label-img" src="${p.img}" alt="${p.name}" loading="lazy">
-        <h3>${p.name}</h3>
+        <h3>${p.name}</h3>${p.slug ? `</a>` : ""}
         <p>${p.text}</p>
         <div class="sizes">${SHOP.prices.map((pr, i) =>
           `<button data-size="${i}" class="${(chosen[p.id] || 0) === i ? "on" : ""}">${pr.size}<br>${money(pr.price)}</button>`).join("")}

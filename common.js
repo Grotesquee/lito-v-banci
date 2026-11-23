@@ -56,24 +56,24 @@ const Cart = {
 function renderHeader() {
   const el = document.getElementById("top");
   if (!el) return;
-  const home = el.dataset.home || "";
+  const home = el.dataset.home || "/";
   const n = Cart.count();
   el.innerHTML = `
     <div class="wrap">
-      <a class="logo" href="./"><img src="img/logo.png" alt="Літо в банці"></a>
+      <a class="logo" href="/"><img src="/img/logo.png" alt="Літо в банці"></a>
       <nav>
         <a class="nav-link" href="${home}#menu">Смаки</a>
         <a class="nav-link" href="${home}#sets">Набори</a>
         <a class="nav-link" href="${home}#order">Доставка</a>
-        <a class="cart-btn" href="checkout.html" aria-label="Кошик">${ICONS.cart}<span class="badge">${n}</span></a>
+        <a class="cart-btn" href="/checkout.html" aria-label="Кошик">${ICONS.cart}<span class="badge">${n}</span></a>
       </nav>
     </div>`;
 }
 
 function renderFooter() {
   const el = document.getElementById("foot");
-  if (el) el.innerHTML = `<img src="img/logo.png" alt="Літо в банці"><div>Ручна робота з любов'ю ·
-    <a class="foot-link" href="https://instagram.com/${SHOP.instagram}" target="_blank" rel="noopener"><img class="avatar" src="img/avatar.jpg" alt="">@${SHOP.instagram}</a></div>`;
+  if (el) el.innerHTML = `<img src="/img/logo.png" alt="Літо в банці"><div>Ручна робота з любов'ю ·
+    <a class="foot-link" href="https://instagram.com/${SHOP.instagram}" target="_blank" rel="noopener"><img class="avatar" src="/img/avatar.jpg" alt="">@${SHOP.instagram}</a></div>`;
 }
 
 const money = n => `${n} грн`;

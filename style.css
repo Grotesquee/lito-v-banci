@@ -193,3 +193,27 @@ footer img.avatar { width: 30px; height: 30px; margin: 0; border-radius: 50%; cl
 .ac li.none { color: var(--muted); cursor: default; }
 .ac li.none:hover { background: none; }
 .field input:disabled { background: #f3f1ec; color: var(--muted); }
+
+/* Flavor page */
+.crumbs { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+.crumbs a { color: var(--berry); text-decoration: none; }
+.product { display: grid; gap: 22px; align-items: center; background: var(--paper); border: 1px solid var(--line);
+  border-radius: 22px; padding: 18px; }
+.product-img { width: 100%; max-width: 360px; aspect-ratio: 1; object-fit: cover; margin: 0 auto; display: block; }
+.product h1 { font-family: "Caveat", cursive; font-size: 48px; line-height: 1.05; margin: 0 0 8px; }
+.product .lead { font-size: 18px; margin: 0 0 16px; }
+.product .btn { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.product .btn svg { width: 20px; height: 20px; }
+.small-note { font-size: 14px; color: var(--muted); margin: 12px 0 0; }
+.product-text { max-width: 680px; margin: 34px auto 30px; }
+.product-text h2 { text-align: left; font-size: 38px; margin-top: 24px; }
+.product-text a { color: var(--berry); }
+.pairs { padding-left: 20px; }
+.pairs li { margin-bottom: 6px; }
+.card-link { text-decoration: none; color: inherit; }
+.card-link:hover { border-color: var(--berry); }
+.card a.to-page { text-decoration: none; color: inherit; }
+@media (min-width: 760px) {
+  .product { grid-template-columns: 1fr 1fr; padding: 28px; }
+  .related { grid-template-columns: repeat(4, 1fr); }
+}
