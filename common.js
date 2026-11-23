@@ -73,7 +73,7 @@ function renderHeader() {
 function renderFooter() {
   const el = document.getElementById("foot");
   if (el) el.innerHTML = `<img src="/img/logo.png" alt="Літо в банці"><div>Ручна робота з любов'ю ·
-    <a class="foot-link" href="https://instagram.com/${SHOP.instagram}" target="_blank" rel="noopener"><img class="avatar" src="/img/avatar.jpg" alt="">@${SHOP.instagram}</a></div>`;
+    <a class="foot-link" href="https://instagram.com/${SHOP.instagram}" target="_blank" rel="noopener"><img class="avatar" src="/img/avatar.jpg" width="30" height="30" alt="">@${SHOP.instagram}</a></div>`;
 }
 
 const money = n => `${n} грн`;

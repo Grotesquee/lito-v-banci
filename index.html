@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=65b33151">
 </head>
 <body>
 
@@ -55,7 +55,7 @@
     <section class="hero">
       <h1 style="margin:0"><img class="hero-logo" src="img/logo.png" alt="Літо в банці"></h1>
       <p class="lead">Домашні джеми та соуси ручної роботи від авторки блогу
-        <a class="foot-link" href="https://instagram.com/cook_and_gossip" target="_blank" rel="noopener"><img class="avatar" src="img/avatar.jpg" alt="">«Готую та пліткую»</a></p>
+        <a class="foot-link" href="https://instagram.com/cook_and_gossip" target="_blank" rel="noopener"><img class="avatar" src="img/avatar.jpg" width="30" height="30" alt="">«Готую та пліткую»</a></p>
       <ul class="badges">
         <li>🍓 Натуральний склад</li>
         <li>❤️ Ручна робота</li>
@@ -124,8 +124,8 @@
   </div>
 </div>
 
-<script src="products.js"></script>
-<script src="common.js"></script>
+<script src="products.js?v=65b33151"></script>
+<script src="common.js?v=65b33151"></script>
 <script>
   document.getElementById("prices").innerHTML = SHOP.prices
     .map(p => `<span class="price-tag">${p.size} — <b>${money(p.price)}</b></span>`).join("");
