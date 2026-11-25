@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=80473821">
+<link rel="stylesheet" href="style.css?v=e6f8215a">
 </head>
 <body>
 
@@ -94,6 +94,14 @@
     </div>
   </section>
 
+  <section id="recipes">
+    <div class="wrap" style="text-align:center">
+      <h2>Рецепти</h2>
+      <p class="sub">Оладки з малиновим джемом, паштет з вишнею, солона карамель — рецепти Віти з відео</p>
+      <a class="btn ghost" href="/recepty/">Дивитися рецепти</a>
+    </div>
+  </section>
+
   <section id="order">
     <div class="wrap">
       <h2>Як замовити</h2>
@@ -124,8 +132,8 @@
   </div>
 </div>
 
-<script src="products.js?v=80473821"></script>
-<script src="common.js?v=80473821"></script>
+<script src="products.js?v=e6f8215a"></script>
+<script src="common.js?v=e6f8215a"></script>
 <script>
   document.getElementById("prices").innerHTML = SHOP.prices
     .map(p => `<span class="price-tag">${p.size} — <b>${money(p.price)}</b></span>`).join("");

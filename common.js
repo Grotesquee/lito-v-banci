@@ -64,6 +64,7 @@ function renderHeader() {
       <nav>
         <a class="nav-link" href="${home}#menu">Смаки</a>
         <a class="nav-link" href="${home}#sets">Набори</a>
+        <a class="nav-link" href="/recepty/">Рецепти</a>
         <a class="nav-link" href="${home}#order">Доставка</a>
         <a class="cart-btn" href="/checkout.html" aria-label="Кошик">${ICONS.cart}<span class="badge">${n}</span></a>
       </nav>
