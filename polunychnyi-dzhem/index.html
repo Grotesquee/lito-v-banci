@@ -65,7 +65,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lora:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css?v=65b33151">
+<link rel="stylesheet" href="/style.css?v=80473821">
 </head>
 <body>
 <!-- Built by build-pages.ps1 from pages.json. Do not edit by hand. -->
@@ -108,6 +108,26 @@
           <a href="/#sets">набір із 6 баночок</a> — так вигідніше.</p>
       </div>
 
+      <section class="reviews" id="reviews">
+        <h2>Відгуки</h2>
+        <p class="sub">Поки що немає відгуків. Куштували цей смак? Розкажіть, як вам.</p>
+        <form class="panel review-form" id="reviewForm" novalidate>
+          <h3>Залишити відгук</h3>
+          <div class="field" id="f-rating"><label>Ваша оцінка</label>
+            <div class="stars-input" role="radiogroup" aria-label="Оцінка від 1 до 5">
+              <button type="button" data-r="1" aria-label="1 зірка">★</button><button type="button" data-r="2" aria-label="2 зірки">★</button><button type="button" data-r="3" aria-label="3 зірки">★</button><button type="button" data-r="4" aria-label="4 зірки">★</button><button type="button" data-r="5" aria-label="5 зірок">★</button>
+            </div><div class="err">Оберіть оцінку</div></div>
+          <div class="field" id="f-rname"><label for="rname">Ваше ім'я</label>
+            <input id="rname" name="name" maxlength="60" autocomplete="given-name"><div class="err">Напишіть ім'я</div></div>
+          <div class="field" id="f-rtext"><label for="rtext">Відгук</label>
+            <textarea id="rtext" name="text" rows="4" maxlength="1000"></textarea><div class="err">Напишіть кілька слів</div></div>
+          <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="send-error" id="reviewError" role="alert" hidden><b>Не вдалося надіслати</b>Спробуйте ще раз трохи згодом.</div>
+          <button class="btn" type="submit">Надіслати відгук</button>
+          <p class="small-note">Відгук з'явиться на сайті після перевірки.</p>
+        </form>
+      </section>
+
       <h2>Схожі смаки</h2>
       <div class="grid related" id="related"></div>
       <p style="text-align:center;margin-top:20px"><a class="btn ghost" href="/#menu">Усі смаки</a></p>
@@ -117,8 +137,8 @@
 
 <footer id="foot"></footer>
 
-<script src="/products.js?v=65b33151"></script>
-<script src="/common.js?v=65b33151"></script>
+<script src="/products.js?v=80473821"></script>
+<script src="/common.js?v=80473821"></script>
 <script>
   const ID = "strawberry";
   let size = 0;
@@ -155,6 +175,39 @@
     .map(p => `<a class="card card-link" href="${link(p)}">
         <img class="label-img" src="/${p.img}" alt="${p.name}" loading="lazy">
         <h3>${p.name}</h3><p>${p.text}</p></a>`).join("");
+
+  // Review form: sends to the same Apps Script as orders (type "review") -> Telegram. Shown on the site after approval.
+  const rf = document.getElementById("reviewForm");
+  let rating = 0;
+  const stars = [...rf.querySelectorAll(".stars-input button")];
+  const paint = n => stars.forEach(s => s.classList.toggle("on", +s.dataset.r <= n));
+  stars.forEach(s => {
+    s.addEventListener("click", () => { rating = +s.dataset.r; paint(rating); document.getElementById("f-rating").classList.remove("bad"); });
+    s.addEventListener("mouseenter", () => paint(+s.dataset.r));
+  });
+  rf.querySelector(".stars-input").addEventListener("mouseleave", () => paint(rating));
+  rf.addEventListener("input", e => e.target.closest(".field")?.classList.remove("bad"));
+
+  rf.addEventListener("submit", async e => {
+    e.preventDefault();
+    const el = rf.elements, name = el.name.value.trim(), text = el.text.value.trim();
+    const bad = { rating: !rating, rname: !name, rtext: text.length < 3 };
+    let ok = true;
+    for (const k in bad) { document.getElementById("f-" + k).classList.toggle("bad", bad[k]); if (bad[k]) ok = false; }
+    if (!ok) return;
+    if (el.website.value) return; // bot filled the hidden field
+    const btn = rf.querySelector("button[type=submit]"), err = document.getElementById("reviewError");
+    err.hidden = true; btn.disabled = true; btn.textContent = "Надсилаємо…";
+    try {
+      const res = await fetch(SHOP.orderEndpoint, { method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ type: "review", product: me.name, url: location.href.split("#")[0], name, rating, text }) });
+      if (!res.ok || (await res.text()).trim() !== "ok") throw new Error("server");
+      rf.innerHTML = `<h3>Дякуємо за відгук! ❤️</h3><p>Він з'явиться на сайті після перевірки.</p>`;
+    } catch (_) {
+      btn.disabled = false; btn.textContent = "Надіслати відгук"; err.hidden = false;
+    }
+  });
 </script>
 </body>
 </html>
